@@ -66,6 +66,7 @@ func TestReElection3A(t *testing.T) {
 
 	// if the leader disconnects, a new one should be elected.
 	ts.g.DisconnectAll(leader1)
+	DPrintf("[Network Change] current leader disconnected\n")
 	tester.AnnotateConnection(ts.g.GetConnected())
 	ts.checkOneLeader()
 
@@ -73,6 +74,7 @@ func TestReElection3A(t *testing.T) {
 	// disturb the new leader. and the old leader
 	// should switch to follower.
 	ts.g.ConnectOne(leader1)
+	DPrintf("[Network Change] reconnect leader\n")
 	tester.AnnotateConnection(ts.g.GetConnected())
 	leader2 := ts.checkOneLeader()
 
@@ -80,6 +82,7 @@ func TestReElection3A(t *testing.T) {
 	// be elected.
 	ts.g.DisconnectAll(leader2)
 	ts.g.DisconnectAll((leader2 + 1) % servers)
+	DPrintf("[Network Change] disconnecte two node\n")
 	tester.AnnotateConnection(ts.g.GetConnected())
 	time.Sleep(2 * RaftElectionTimeout)
 
@@ -89,11 +92,13 @@ func TestReElection3A(t *testing.T) {
 
 	// if a quorum arises, it should elect a leader.
 	ts.g.ConnectOne((leader2 + 1) % servers)
+	DPrintf("[Network Change] reconnect, now cluster has 2 node\n")
 	tester.AnnotateConnection(ts.g.GetConnected())
 	ts.checkOneLeader()
 
 	// re-join of last node shouldn't prevent leader from existing.
 	ts.g.ConnectOne(leader2)
+	DPrintf("[Network Change] reconnect, now cluster has 3 node\n")
 	tester.AnnotateConnection(ts.g.GetConnected())
 	ts.checkOneLeader()
 }
