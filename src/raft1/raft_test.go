@@ -207,6 +207,8 @@ func TestFollowerFailure3B(t *testing.T) {
 	ts.g.DisconnectAll((leader1 + 1) % servers)
 	tester.AnnotateConnection(ts.g.GetConnected())
 
+	DPrintf("[NetworkChange], follower disconnected")
+
 	// the leader and remaining follower should be
 	// able to agree despite the disconnected follower.
 	ts.one(102, servers-1, false)
@@ -218,6 +220,8 @@ func TestFollowerFailure3B(t *testing.T) {
 	ts.g.DisconnectAll((leader2 + 1) % servers)
 	ts.g.DisconnectAll((leader2 + 2) % servers)
 	tester.AnnotateConnection(ts.g.GetConnected())
+
+	DPrintf("[NetworkChange], disconnect the remaining follower")
 
 	// submit a command.
 	index, _, ok := ts.srvs[leader2].Raft().Start(104)
@@ -296,6 +300,8 @@ func TestFailAgree3B(t *testing.T) {
 	time.Sleep(RaftElectionTimeout)
 	ts.one(104, servers-1, false)
 	ts.one(105, servers-1, false)
+
+	DPrintf("[network change], re-connect")
 
 	// re-connect
 	ts.g.ConnectOne((leader + 1) % servers)
@@ -492,6 +498,8 @@ func TestRejoin3B(t *testing.T) {
 	tester.AnnotateTest("TestRejoin3B", servers)
 	ts.Begin("Test (3B): rejoin of partitioned leader")
 
+	DPrintf("[network change], old leader disconnect")
+
 	ts.one(101, servers, true)
 
 	// leader network failure
@@ -513,16 +521,20 @@ func TestRejoin3B(t *testing.T) {
 	// new leader network failure
 	leader2 := ts.checkOneLeader()
 	ts.g.DisconnectAll(leader2)
+	DPrintf("[network change], new leader disconnect")
 
 	// old leader connected again
 	ts.g.ConnectOne(leader1)
 	tester.AnnotateConnection(ts.g.GetConnected())
+
+	DPrintf("[network change], old leader re-connect")
 
 	ts.one(104, 2, true)
 
 	// all together now
 	ts.g.ConnectOne(leader2)
 	tester.AnnotateConnection(ts.g.GetConnected())
+	DPrintf("[network change], new leader re-connect")
 
 	ts.one(105, servers, true)
 }
